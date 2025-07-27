@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
-.venv/
+resassist/
 topics.json
 data/
+.env
