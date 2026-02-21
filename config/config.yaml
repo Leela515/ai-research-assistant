@@ -1,0 +1,7 @@
+models:
+  summarizer: "facebook/bart-large-cnn"
+  critic: "google/flan-t5-base"
+
+paths:
+  downloads: "downloads/"
+  outputs: "outputs/"

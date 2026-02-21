@@ -4,3 +4,7 @@ resassist/
 topics.json
 data/
 .env
+downloads/
+*.txt
+outputs/
+*.json
