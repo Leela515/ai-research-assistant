@@ -1,6 +1,9 @@
 from typing import Any, List, Dict
 import numpy as np
 import faiss
+import json
+from pathlib import Path
+
 
 class FaissVectorStore:
     def __init__(self, dimension: int):
@@ -41,3 +44,28 @@ class FaissVectorStore:
             })
 
         return results
+    
+    def save(self, dir_path: str) -> None:
+        p = Path(dir_path)
+        p.mkdir(parents=True, exist_ok=True)
+
+        faiss.write_index(self.index, str(p / "index.faiss"))
+
+        with open(p / "metadata.jsonl", "w", encoding="utf-8") as f:
+            for item in self.metadata:
+                f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+    @classmethod
+    def load(cls, dir_path: str) -> "FaissVectorStore":
+        p = Path(dir_path)
+        index = faiss.read_index(str(p / "index.faiss"))
+
+        store = cls(dimension=index.d)
+        store.index = index
+
+        meta = []
+        with open(p / "metadata.jsonl", "r", encoding="utf-8") as f:
+                  for line in f:
+                    meta.append(json.loads(line))
+        store.metadata = meta
+        return store
