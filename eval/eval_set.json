@@ -1,0 +1,80 @@
+[
+  {
+    "query_id": "q1",
+    "query": "how does SPIDE train spiking neural network?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_9_chunk_0",
+      "paper_2302.00232v1_sec_4_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q2",
+    "query": "What is spike-based training in spiking neural network?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_9_chunk_0",
+      "paper_1606.00825v2_sec_12_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q3",
+    "query": "What limitations  exists in ANN-SNN conversion?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_3_chunk_4",
+      "paper_2302.00232v1_sec_15_chunk_5"
+    ]
+  },
+  {
+    "query_id": "q4",
+    "query": "Why are spiking neural network energy efficient?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_1_chunk_0",
+      "paper_2302.00232v1_sec_2_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q5",
+    "query": "how are spikes used in training instead of gradients?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_3_chunk_2",
+      "paper_2302.00232v1_sec_3_chunk_5"
+    ]
+  },
+  {
+    "query_id": "q6",
+    "query": "What is implicit differentiation in SNN?",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_3_chunk_5",
+      "paper_2302.00232v1_sec_8_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q7",
+    "query": "What is surrogate gradient in SNN",
+    "relevant_chunk_ids": [
+      "paper_2302.00232v1_sec_3_chunk_2"
+    ]
+  },
+  {
+    "query_id": "q8",
+    "query": "What model does NeuroCoreX paper is proposing?",
+    "relevant_chunk_ids": [
+      "paper_2506.14138v1_sec_1_chunk_3",
+      "paper_2506.14138v1_sec_11_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q9",
+    "query": "What is Spiking Inception module?",
+    "relevant_chunk_ids": [
+      "paper_2001.10696v5_sec_9_chunk_0",
+      "paper_2001.10696v5_sec_16_chunk_0"
+    ]
+  },
+  {
+    "query_id": "q10",
+    "query": "What is a Bayesian Spiking neural network?",
+    "relevant_chunk_ids": [
+      "paper_1606.00825v2_sec_7_chunk_0"
+    ]
+  }
+]

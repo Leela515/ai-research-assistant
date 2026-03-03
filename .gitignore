@@ -1,11 +1,28 @@
+# Python
 __pycache__/
 *.pyc
+*.pyo
+
+# Virtual env
+venv/
 resassist/
-topics.json
-data/
-.env
+
+# Data
 downloads/
-*.txt
-outputs/
-*.json
+library/
 indexes/
+outputs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Large artifacts
+*.faiss
+*.npy
+*.pt
+*.bin

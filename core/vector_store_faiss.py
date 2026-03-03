@@ -8,7 +8,7 @@ from pathlib import Path
 class FaissVectorStore:
     def __init__(self, dimension: int):
         self.dimension = dimension
-        self.index = faiss.IndexFlatL2(dimension)
+        self.index = faiss.IndexFlatIP(dimension)
         self.metadata:List[Dict[str, Any]] = []
 
     def add(self, vectors: np.ndarray, metadata: List[Dict[str, Any]]):
