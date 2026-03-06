@@ -12,7 +12,7 @@ The project explores how AI systems can assist researchers by structuring resear
 
 ## 📂 Repository Structure
 
----
+```
 ai-research-assistant/
 │
 ├── agents/ # Paper retrieval logic
@@ -37,10 +37,12 @@ ai-research-assistant/
 │ └── eval_set.json
 │
 ├── tests/
+│ ├── test_chunking.py
+│ ├── test_download.py
 │ └── test_registry.py
 │
 └── README.md
-
+```
 ---
 
 ## Technologies
