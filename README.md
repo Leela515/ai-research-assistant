@@ -4,52 +4,48 @@
 ![Vector DB](https://img.shields.io/badge/Vector%20DB-FAISS-purple)
 ![Project](https://img.shields.io/badge/Project-Active-orange)
 
-A document intelligence system that ingests academic papers, converts them into structured semantic chunks, and enables retrieval of relevant evidence using vector search.
 
-The project explores how AI systems can assist researchers by structuring research papers and enabling semantic queries across documents.
+AI research assistant system for querying academic literature, performing paper retrieval and ingestion, and generating answers from retrieved evidence.
+
+The system is structured to separate query execution, document processing, and answer generation, allowing controlled retrieval and extensibility toward verification and revision workflows.
 
 ---
 
 ## 📂 Repository Structure
 
 ```
-ai-research-assistant/
-│
-├── agents/ # Paper retrieval logic
-│ └── retriever_agent.py
-│
-├── core/ # Core system components
-│ ├── chunker.py
-│ ├── embeddings.py
-│ ├── registry.py
-│ └── vector_store_faiss.py
-│
-├── parsers/ # PDF parsing
-│ └── docling_parser.py
-│
-├── scripts/ # System entrypoints
-│ ├── ingest_library.py
-│ ├── search_library.py
-│ └── evaluate_retrieval.py
-│
-├── eval/ # Retrieval evaluation dataset
-│ ├── build_eval_set.py
-│ └── eval_set.json
-│
-├── tests/
-│ ├── test_chunking.py
-│ ├── test_download.py
-│ └── test_registry.py
-│
-└── README.md
+app/        FastAPI interface  
+agents/     retrieval components  
+core/       chunking, embeddings, vector store, answer pipeline  
+models/     internal data structures  
+parsers/    document parsing  
+scripts/    ingestion and indexing utilities  
+eval/       evaluation dataset and scripts  
+tests/      test suite   
 ```
 ---
 
-## Technologies
+## Scope
 
-Python  
-FAISS (vector similarity search)  
-Sentence Transformers  
-Docling  
-NumPy  
-arXiv API
+- paper retrieval (arXiv / local)
+- PDF parsing
+- section-aware chunking
+- FAISS indexing and retrieval
+- API-based query execution
+
+---
+
+## API
+
+GET /health  
+POST /query
+
+---
+
+## Reproduce
+
+```bash
+pip install -r requirements.txt
+python -m scripts.build_index
+uvicorn app.main:app --reload
+
