@@ -26,7 +26,9 @@ def chunk_sections(
                     Chunk(
                         chunk_id=f"{section.section_id}_chunk_{idx}",
                         paper_id=section.paper_id,
+                        title=getattr(section, "paper_title", None),
                         section_id=section.section_id,
+                        section_title=getattr(section, "title", None),
                         chunk_index=idx,
                         text=chunk_text,
                         char_start=start,

@@ -9,7 +9,7 @@ class Section(BaseModel):
     section_type: str = Field(
         ..., description="e.g. abstract, introduction, method, results"
     )
-
+    paper_title: Optional[str] = None
     page_start: Optional[int] = None
     page_end: Optional[int] = None
 

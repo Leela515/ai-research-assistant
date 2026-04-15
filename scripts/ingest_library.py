@@ -132,9 +132,11 @@ def main():
                 "paper_id": paper.paper_id,
                 "arxiv_id": paper.arxiv_id,
                 "title": getattr(paper, "title", None),
+                "authors": getattr(paper, "authors", []),
+                "year": getattr(paper, "year", None),
                 "pdf_url": getattr(paper, "pdf_url", None),
                 "pdf_path": paper.pdf_path,
-                "ingested_at": datetime.utcnow().isoformat() + "Z",
+                "ingestion_date": datetime.utcnow().isoformat() + "Z",
                 "source": "arxiv",
                 "topic_seed": topic,
             })

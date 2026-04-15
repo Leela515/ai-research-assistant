@@ -23,7 +23,7 @@ def main():
             continue
 
         qvec = embedder.embed_query(query)
-        results = store.search(qvec, top_k=8)
+        results = store.search_diverse(qvec, top_k_raw=40, max_per_paper=2)
 
         if not results:
             print("No results.")

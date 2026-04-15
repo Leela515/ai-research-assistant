@@ -48,4 +48,3 @@ POST /query
 pip install -r requirements.txt
 python -m scripts.build_index
 uvicorn app.main:app --reload
-

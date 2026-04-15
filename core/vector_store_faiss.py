@@ -1,8 +1,9 @@
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional
 import numpy as np
 import faiss
 import json
 from pathlib import Path
+from collections import defaultdict
 
 
 class FaissVectorStore:
@@ -44,6 +45,35 @@ class FaissVectorStore:
             })
 
         return results
+    
+    def search_diverse(
+            self,
+            query_vector: np.ndarray,
+            topk: int = 8,
+            top_k_raw: int = 40,
+            max_per_paper: int = 2,
+    ) -> List[Dict[str, Any]]:
+        
+        raw_results = self.search(query_vector, top_k=top_k_raw)
+
+        per_paper_count = defaultdict(int)
+        diverse = []
+
+        for r in raw_results:
+            paper_id = r["metadata"].get("paper_id")
+            if paper_id is None:
+                diverse.append(r)
+            else:
+                if per_paper_count[paper_id] >= max_per_paper:
+                    continue
+                per_paper_count[paper_id] += 1
+                diverse.append(r)
+            
+            if len(diverse) >= topk:
+                break
+        
+        return diverse
+
     
     def save(self, dir_path: str) -> None:
         p = Path(dir_path)

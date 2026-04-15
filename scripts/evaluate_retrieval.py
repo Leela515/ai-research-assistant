@@ -44,7 +44,7 @@ def main():
         relevant = set(item["relevant_chunk_ids"])
 
         qvec = embedder.embed_query(query)
-        results = store.search(qvec, top_k=max(ks))
+        results = store.search_diverse(qvec, topk=max(ks), top_k_raw=40, max_per_paper=2)
 
         retrieved_ids = [r["chunk_id"] for r in results]
 

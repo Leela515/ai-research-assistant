@@ -4,10 +4,13 @@ from typing import List
 import requests
 
 from models.paper import Paper
-from utils.pdf_utils import get_pdf_link
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def get_pdf_link(arxiv_abs_url: str) -> str:
+    return arxiv_abs_url.replace("abs", "pdf") + ".pdf"
 
 
 class RetrieverAgent:

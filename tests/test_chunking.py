@@ -1,25 +1,69 @@
-from agents.retriever_agent import RetrieverAgent
-from core.downloader import download_pdf
-from parsers.docling_parser import DoclingParser
 from core.chunker import chunk_sections
+from models.section import Section
 
-def main():
-    paper = RetrieverAgent(max_results=1).retrieve("spiking neural networks")[0]
-    paper = download_pdf(paper)
 
-    sections = DoclingParser().parse(paper)
-    chunks = chunk_sections(sections)
+def test_chunk_sections_skips_empty_sections():
+    sections = [
+        Section(
+            section_id="paper_1_sec_0",
+            paper_id="paper_1",
+            title="Empty",
+            section_type="unknown",
+            text="   ",
+        )
+    ]
 
-    print("sections:", len(sections))
-    print("chunks:", len(chunks))
+    assert chunk_sections(sections) == []
 
-    print("\n--- First 3 chunks ---")
-    for c in chunks[:3]:
-        print("chunk_id:", c.chunk_id)
-        print("section_id:", c.section_id)
-        print("tokens~:", c.token_count)
-        print(c.text[:400])
-        print("-" * 60)
 
-if __name__ == "__main__":
-    main()
+def test_chunk_sections_preserves_overlap_and_metadata():
+    text = "abcdefghij" * 3
+    sections = [
+        Section(
+            section_id="paper_1_sec_0",
+            paper_id="paper_1",
+            title="Intro",
+            section_type="introduction",
+            text=text,
+        )
+    ]
+
+    chunks = chunk_sections(sections, max_char=10, overlap=3)
+
+    assert len(chunks) == 4
+
+    first, second = chunks[0], chunks[1]
+    assert first.chunk_id == "paper_1_sec_0_chunk_0"
+    assert first.paper_id == "paper_1"
+    assert first.section_id == "paper_1_sec_0"
+    assert first.char_start == 0
+    assert first.char_end == 10
+    assert first.text == text[0:10]
+
+    assert second.chunk_id == "paper_1_sec_0_chunk_1"
+    assert second.char_start == 7
+    assert second.char_end == 17
+    assert second.text == text[7:17]
+
+
+def test_chunk_sections_handles_multiple_sections():
+    sections = [
+        Section(
+            section_id="paper_1_sec_0",
+            paper_id="paper_1",
+            title="Abstract",
+            section_type="abstract",
+            text="one two three",
+        ),
+        Section(
+            section_id="paper_1_sec_1",
+            paper_id="paper_1",
+            title="Method",
+            section_type="method",
+            text="four five six",
+        ),
+    ]
+
+    chunks = chunk_sections(sections, max_char=50, overlap=5)
+
+    assert [chunk.section_id for chunk in chunks] == ["paper_1_sec_0", "paper_1_sec_1"]
