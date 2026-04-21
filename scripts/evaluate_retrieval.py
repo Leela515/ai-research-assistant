@@ -23,7 +23,9 @@ def main():
     report_path = Path("eval/report.json")
 
     if not (index_dir / "index.faiss").exists():
-        raise FileNotFoundError("No library index found. Run scripts/ingest_library.py first.")
+        raise FileNotFoundError(
+            "No library index found. Run scripts/build_index.py or scripts/ingest_library.py first."
+        )
     if not eval_path.exists():
         raise FileNotFoundError("Missing eval/eval_set.json. Create it first.")
 

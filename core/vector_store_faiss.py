@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional
+from typing import Any, List, Dict
 import numpy as np
 import faiss
 import json
@@ -95,7 +95,13 @@ class FaissVectorStore:
 
         meta = []
         with open(p / "metadata.jsonl", "r", encoding="utf-8") as f:
-                  for line in f:
-                    meta.append(json.loads(line))
+            for line in f:
+                meta.append(json.loads(line))
+
+        if len(meta) != index.ntotal:
+            raise ValueError(
+                f"Index/metadata mismatch: metadata has {len(meta)} rows but FAISS index has {index.ntotal} vectors"
+            )
+
         store.metadata = meta
         return store

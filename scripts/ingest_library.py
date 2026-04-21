@@ -17,6 +17,11 @@ LIBRARY_DIR = Path("library")
 INDEX_DIR = LIBRARY_DIR / "index"
 REGISTRY_PATH = LIBRARY_DIR / "papers.jsonl"
 MANIFEST_PATH = INDEX_DIR / "manifest.json"
+CHUNK_CONFIG = {
+    "strategy": "section_chunking",
+    "max_char": 1500,
+    "overlap": 200,
+}
 
 def load_manifest() -> Dict[str, Any] | None:
     """Load index manifest if exists."""
@@ -62,11 +67,6 @@ def main():
     topic = "Spiking Neural Networks"
     max_papers = 5
 
-    chunk_cfg = {
-        "strategy": "section_chunking",
-        "overlap": "as_implemented_in_chunk_sections",
-    }
-
     LIBRARY_DIR.mkdir(parents=True, exist_ok=True)
     INDEX_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -85,10 +85,10 @@ def main():
         manifest = load_manifest()
         if manifest is None:
             print("[WARN] No manifest found. Creating one from current settings.")
-            manifest = build_manifest(embedder, store.dimension, chunk_cfg)
+            manifest = build_manifest(embedder, store.dimension, CHUNK_CONFIG)
             save_manifest(manifest)
         else:
-            assert_manifest_compatible(manifest, embedder, store.dimension, chunk_cfg)
+            assert_manifest_compatible(manifest, embedder, store.dimension, CHUNK_CONFIG)
             print("[INFO] Manifest compatible.")
     else:
         store = None
@@ -163,7 +163,7 @@ def main():
         print(f"[INFO] Created new FAISS store with dim={store.dimension}")
 
         # Create manifest for new index
-        manifest = build_manifest(embedder, store.dimension, chunk_cfg)
+        manifest = build_manifest(embedder, store.dimension, CHUNK_CONFIG)
         save_manifest(manifest)
         print("[INFO] Saved new manifest.")
 

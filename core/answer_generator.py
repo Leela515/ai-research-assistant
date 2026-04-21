@@ -1,11 +1,13 @@
 from typing import List, Dict
 from core.vector_store_faiss import FaissVectorStore
 from core.embeddings import EmbeddingModel
+from core.llm.ollama_client import OllamaClient
 
 class AnswerGenerator:
     def __init__(self, index_path:str = "library/index"):
         self.embedder = EmbeddingModel()
         self.store = FaissVectorStore.load(index_path)
+        self.llm = OllamaClient()
 
     def retrieve(self, query: str, top_k: int = 5) -> List[Dict]:
         query_embedding = self.embedder.embed_query(query)
@@ -13,7 +15,7 @@ class AnswerGenerator:
         return results
     
     def build_prompt(self, query: str, chunks: List[Dict]) -> str:
-        context = "n\n".join(
+        context = "\n\n".join(
             [f"[Source {i+1}] {chunk['metadata']['text']}" for i, chunk in enumerate(chunks)]
         )
 
@@ -21,11 +23,20 @@ class AnswerGenerator:
 You are an AI research assistant. 
 
 Answer the question using ONLY the provided sources.
+Do not use outside knowledge.
+Do not make up information.
+Do not write in fragments. Write clearly and coherently.
 
-If the answer is not contained in the sources, say:
-"I could not find sufficient evidence."
+If the sources contain enough evidence, provide a concise and accurate answer.
+When citing, use ONLY the provided retrieval citations in the form [Source X].
+Do not use citation numbers that appear inside the source text.
 
-Question:
+If the sources provide only partial or unclear evidence, answer cautiously and explicitly state that the evidence is limited.
+
+If the sources do not contain enough evidence to answer the question, say:
+"I could not find sufficient evidence in the provided sources to answer the question."
+
+Question: 
 {query}
 
 Sources:
@@ -36,7 +47,7 @@ Answer:
         return prompt
     
     def generate_answer(self, prompt: str) -> str:
-        return "LLM integration not added yet."
+        return self.llm.generate(prompt)
     
     def format_output(self, answer: str, chunks: List[Dict]) -> str:
         sources = "\n".join(
@@ -58,5 +69,6 @@ Sources:
     def answer(self, query: str) -> str:
         chunks = self.retrieve(query)
         prompt = self.build_prompt(query, chunks)
+        print("Generated Prompt:\n", prompt)  # Debugging line to check the generated prompt
         answer = self.generate_answer(prompt)
         return self.format_output(answer, chunks)

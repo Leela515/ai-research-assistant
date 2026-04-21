@@ -8,7 +8,9 @@ from core.vector_store_faiss import FaissVectorStore
 def main():
     index_dir = Path("library/index")
     if not (index_dir / "index.faiss").exists():
-        raise FileNotFoundError("No library index found. Run scripts/ingest_library.py first.")
+        raise FileNotFoundError(
+            "No library index found. Run scripts/build_index.py or scripts/ingest_library.py first."
+        )
 
     store = FaissVectorStore.load(str(index_dir))
     embedder = EmbeddingModel()
@@ -35,8 +37,8 @@ def main():
         for i, r in enumerate(results, start=1):
             md = r["metadata"]
             print(f"{i}. score={r['score']:.4f} paper_id={md['paper_id']} section_id={md['section_id']} chunk_id={md['chunk_id']}")
-            print(f"   preview: {md.get('text_preview', '')}\n")
-
+            preview = md.get("text_preview") or md.get("text", "")[:240]
+            print(f"   preview: {preview}\n")
 
 if __name__ == "__main__":
     main()

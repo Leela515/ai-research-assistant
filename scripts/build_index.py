@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -8,6 +9,12 @@ from core.vector_store_faiss import FaissVectorStore
 
 DOWNLOADS_DIR = Path("downloads")
 INDEX_DIR = Path("library/index")
+MANIFEST_PATH = INDEX_DIR / "manifest.json"
+CHUNK_CONFIG = {
+    "strategy": "section_chunking",
+    "max_char": 1500,
+    "overlap": 200,
+}
 
 
 def build_paper_obj(pdf_path: Path):
@@ -20,6 +27,16 @@ def build_paper_obj(pdf_path: Path):
         pdf_path=str(pdf_path),
         source="local_rebuild",
     )
+
+
+def build_manifest(embedder: EmbeddingModel, dimension: int) -> dict:
+    return {
+        "embedding_model": getattr(embedder, "model_name", "unknown"),
+        "dimension": dimension,
+        "chunk_config": CHUNK_CONFIG,
+        "faiss_index_type": "IndexFlatIP (cosine via L2-normalization)",
+        "build_source": "local_rebuild",
+    }
 
 
 def main():
@@ -52,8 +69,15 @@ def main():
     embeddings = embedder.embed_texts(texts)
 
     store = FaissVectorStore(len(embeddings[0]))
-    store.add(embeddings, [chunk.model_dump() for chunk in all_chunks])
+    metadata = []
+    for chunk in all_chunks:
+        item = chunk.model_dump()
+        item["text_preview"] = chunk.text[:240]
+        metadata.append(item)
+
+    store.add(embeddings, metadata)
     store.save(str(INDEX_DIR))
+    MANIFEST_PATH.write_text(json.dumps(build_manifest(embedder, store.dimension), indent=2), encoding="utf-8")
 
     print(f"[INFO] Rebuild complete. Total chunks: {len(all_chunks)}")
 

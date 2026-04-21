@@ -11,3 +11,4 @@ class SourceItem(BaseModel):
 class QueryResponse(BaseModel):
     answer: str
     sources: List[SourceItem]
+    confidence: float
