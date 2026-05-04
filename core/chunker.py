@@ -10,52 +10,51 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text
 
-def is_good_chunk(text: str) -> bool:
+def is_good_text_block(text: str) -> bool:
     if not text:
         return False
-    if len(text) < 50:
+    stripped = text.strip()
+    if len(stripped) < 80:
         return False
-    if len(text.split()) < 40:
+    if len(stripped.split()) < 20:
         return False
-    if text.strip() in ["Bibliography", "References"]:
+    if stripped in ["Bibliography", "References"]:
         return False
-    if "<!-- image -->" in text:
+    if "<!-- image -->" in stripped:
         return False
-    if text.strip().startswith("Figure") and len(text.strip()) < 100:
+    if stripped.startswith("Figure") and len(stripped) < 150:
         return False
+    if "|" in stripped and len(stripped.split()) < 80:
+        return False
+
+    alpha_ratio = sum(c.isalpha() for c in stripped) / max(len(stripped), 1)
+    if alpha_ratio < 0.55:
+        return False
+
     return True
 
-def find_chunk_end(text: str, start: int, max_char: int) -> int:
-    rough_end = min(start + max_char, len(text))
+def split_into_paragraphs(text: str) -> List[str]:
+    paragraphs = text.split("\n\n")
+    return [p.strip() for p in paragraphs if p.strip()]
 
-    if rough_end == len(text):
-        return rough_end
+def get_overlap_text(text: str, max_overlap_char: int = 120) -> str:
+    if len(text) <= max_overlap_char:
+        return text
+    
+    tail = text[-max_overlap_char:]
 
-    window = text[start:rough_end]
+    sentence_starts = [tail.rfind(sep) for sep in [",", "?", "!"]]
+    best_start = max(sentence_starts)
 
-    # Try paragraph break first
-    idx = window.rfind("\n\n")
-    if idx != -1 and idx > max_char * 0.5:
-        return start + idx
-
-    # Try sentence boundaries
-    for sep in [". ", "? ", "! "]:
-        idx = window.rfind(sep)
-        if idx != -1 and idx > max_char * 0.5:
-            return start + idx + len(sep)
-
-    # Fallback: last space
-    idx = window.rfind(" ")
-    if idx != -1 and idx > max_char * 0.5:
-        return start + idx
-
-    # If nothing found, use rough cut
-    return rough_end
+    if best_start != -1:
+        return tail[best_start + 2:].strip()
+    
+    return tail.strip()
 
 def chunk_sections(
         sections: List[Section],
-        max_char: int = 1500,
-        overlap: int = 200
+        max_char: int = 1200,
+        overlap: int = 120
 ) -> List[Chunk]:
     chunks: List[Chunk] = []
 
@@ -64,14 +63,41 @@ def chunk_sections(
         if not text:
             continue
 
-        start = 0
+        paragraphs = split_into_paragraphs(text)
+        if not paragraphs:
+            continue
+
+        good_paragraphs = [p for p in paragraphs if is_good_text_block(p)]   
+        if not good_paragraphs:
+            continue
+
         idx = 0
+        current_parts: List[str] = []
+        current_length = 0
+        char_cursor = 0
 
-        while start < len(text):
-            end = find_chunk_end(text, start, max_char)
-            chunk_text = text[start:end].strip()
+        for paragraph in good_paragraphs:
+            paragraph_length = len(paragraph)
 
-            if chunk_text and is_good_chunk(chunk_text):
+            # if current chunk is empty , start with this paragraph
+            if not current_parts:
+                current_parts = [paragraph]
+                current_length = paragraph_length
+                continue
+
+            # if adding this paragraph says within limit, keep building current chunk
+            if current_length + 2 + paragraph_length <= max_char:
+                current_parts.append(paragraph)
+                current_length += 2 + paragraph_length
+                continue
+
+            # Finalize current chunk
+            chunk_text = "\n\n".join(current_parts).strip()
+
+            if is_good_text_block(chunk_text):
+                chunk_char_start = char_cursor
+                chunk_char_end = char_cursor + len(chunk_text)
+
                 chunks.append(
                     Chunk(
                         chunk_id=f"{section.section_id}_chunk_{idx}",
@@ -81,16 +107,45 @@ def chunk_sections(
                         section_title=getattr(section, "title", None),
                         chunk_index=idx,
                         text=chunk_text,
-                        char_start=start,
-                        char_end=end,
+                        char_start=chunk_char_start,
+                        char_end=chunk_char_end,
                         token_count=len(chunk_text.split()),
                     )
                 )
 
-            idx += 1
-            if end >= len(text):
-                break
+                idx += 1
+                char_cursor = chunk_char_end
 
-            start = max(0, end - overlap)
+            # start next chunk with overlap + current paragraph
+            overlap_text = get_overlap_text(chunk_text, max_overlap_char=overlap) if chunk_text else ""
 
-    return chunks
+            if overlap_text:
+                current_parts = [overlap_text, paragraph]
+                current_length = len(overlap_text) + 2 + paragraph_length
+            else:
+                current_parts = [paragraph]
+                current_length = paragraph_length
+
+            # Finalize any remaining text as last chunk
+            if current_parts:
+                chunk_text = "\n\n".join(current_parts).strip()
+
+                if is_good_text_block(chunk_text):
+                    chunk_char_start = char_cursor
+                    chunk_char_end = char_cursor + len(chunk_text)
+
+                    chunks.append(
+                        Chunk(
+                            chunk_id=f"{section.section_id}_chunk_{idx}",
+                            paper_id=section.paper_id,
+                            title=getattr(section, "paper_title", None),
+                            section_id=section.section_id,
+                            section_title=getattr(section, "title", None),
+                            chunk_index=idx,
+                            text=chunk_text,
+                            char_start=chunk_char_start,
+                            char_end=chunk_char_end,
+                            token_count=len(chunk_text.split()),
+                        )
+                    )
+    return chunks 

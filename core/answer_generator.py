@@ -11,7 +11,11 @@ class AnswerGenerator:
 
     def retrieve(self, query: str, top_k: int = 5) -> List[Dict]:
         query_embedding = self.embedder.embed_query(query)
-        results = self.store.search(query_embedding, top_k=top_k)
+        results = self.store.search_diverse(
+            query_embedding, 
+            topk=top_k,
+            top_k_raw=40,
+            max_per_paper=2)
         return results
     
     def build_prompt(self, query: str, chunks: List[Dict]) -> str:
@@ -28,8 +32,10 @@ Do not make up information.
 Do not write in fragments. Write clearly and coherently.
 
 If the sources contain enough evidence, provide a concise and accurate answer.
-When citing, use ONLY the provided retrieval citations in the form [Source X].
-Do not use citation numbers that appear inside the source text.
+If multiple methods are mentioned, list them as bullet points.
+Each bullet point must end with a citation to the source in the format [Source X], where X is the source number.
+Use only [source X] citations.
+Do not use citations that appear inside the source text.
 
 If the sources provide only partial or unclear evidence, answer cautiously and explicitly state that the evidence is limited.
 
